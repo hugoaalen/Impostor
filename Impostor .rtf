@@ -1,0 +1,288 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 .SFNS-Semibold;\f1\fnil\fcharset0 .SFNS-Regular;\f2\fnil\fcharset0 HelveticaNeue-Bold;
+\f3\fswiss\fcharset0 Helvetica;\f4\froman\fcharset0 TimesNewRomanPSMT;\f5\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;
+}
+{\colortbl;\red255\green255\blue255;\red14\green14\blue14;}
+{\*\expandedcolortbl;;\cssrgb\c6700\c6700\c6700;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww29200\viewh15240\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs44 \cf2 Documentaci\'f3n funcional de la aplicaci\'f3n \'93El Impostor\'94
+\f1\b0\fs28 \
+\
+
+\f0\b\fs34 1. Resumen general
+\f1\b0\fs28 \
+\
+La aplicaci\'f3n es un juego social tipo \'93El Impostor\'94 dise\'f1ado para jugar entre amigos desde sus m\'f3viles, accediendo todos a una misma sala en una web. El objetivo es asignar roles ocultos (ciudadanos e impostores) y una palabra o pista a cada jugador para que debatan, den pistas y descubran qui\'e9n miente.\
+\
+El juego destaca por permitir 
+\f2\b tem\'e1ticas personalizadas
+\f1\b0  y la 
+\f2\b generaci\'f3n din\'e1mica de palabras usando IA
+\f1\b0 , evitando listas fijas que los jugadores memoricen.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 2. Mec\'e1nica de juego
+\f1\b0\fs28 \
+\pard\tqr\tx440\tx600\li600\fi-600\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	Un jugador crea una sala.\
+	2.	El resto de jugadores se unen introduciendo el c\'f3digo de la sala.\
+	3.	Cada jugador escribe su nombre.\
+	4.	El creador de la sala (host) inicia la partida.\
+	5.	El sistema calcula cu\'e1ntos impostores debe haber seg\'fan el n\'famero de jugadores.\
+	6.	Se generan:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f2\b Una palabra principal
+\f1\b0  para los ciudadanos.\
+	\'95	
+\f2\b Una palabra alternativa o pista ambigua
+\f1\b0  para los impostores.\
+\pard\tqr\tx440\tx600\li600\fi-600\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	7.	Cada jugador recibe su rol y su palabra/pista de manera privada en su dispositivo.\
+	8.	Comienza el turno de debate.\
+	9.	Se realiza una votaci\'f3n.\
+	10.	La app revela qui\'e9n era el impostor.\
+	11.	Se permite iniciar otra ronda.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 3. L\'f3gica para determinar impostores
+\f1\b0\fs28 \
+\
+La cantidad de impostores depende autom\'e1ticamente del n\'famero de jugadores:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	3\'964 jugadores \uc0\u8594  
+\f2\b 1 impostor
+\f1\b0 \
+	\'95	5\'967 jugadores \uc0\u8594  
+\f2\b 2 impostores
+\f1\b0 \
+	\'95	8\'9610 jugadores \uc0\u8594  
+\f2\b 3 impostores
+\f1\b0 \
+\
+Esta l\'f3gica se aplicar\'e1 de forma autom\'e1tica al iniciar la partida.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 4. Salas de juego
+\f1\b0\fs28 \
+\
+Cada partida se gestiona mediante un identificador \'fanico de sala.\
+\
+Caracter\'edsticas de una sala:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	C\'f3digo \'fanico.\
+	\'95	Lista de jugadores.\
+	\'95	Estado de la partida (espera, en juego, votaci\'f3n, resultados).\
+	\'95	Tema seleccionado para la ronda.\
+	\'95	Datos generados por la IA (palabra principal + palabra/pista del impostor).\
+	\'95	Roles asignados.\
+\
+Los jugadores se conectan en tiempo real y ven actualizaciones sincronizadas.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 5. Temas y generaci\'f3n de palabras con IA
+\f1\b0\fs28 \
+\
+La app debe permitir:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 5.1 Temas predefinidos
+\f1\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Futbolistas\
+	\'95	Actores\
+	\'95	Comidas\
+	\'95	Famosos\
+	\'95	Animales\
+	\'95	Tem\'e1tica mixta (elegida aleatoriamente)\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 5.2 Crear temas personalizados
+\f1\b0\fs28 \
+\
+El usuario puede escribir un tema propio, por ejemplo:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	\'93Personajes de anime\'94\
+	\'95	\'93Tecnolog\'edas de programaci\'f3n\'94\
+	\'95	\'93Ciudades europeas\'94\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 5.3 Generaci\'f3n din\'e1mica por IA
+\f1\b0\fs28 \
+\
+Se enviar\'e1 a la IA una instrucci\'f3n como:\
+\
+\pard\tx860\tx1420\tx1980\tx2540\tx3100\tx3660\tx4220\tx4780\tx5340\tx5900\tx6460\tx7020\li300\sl324\slmult1\partightenfactor0
+\cf2 \'93Genera una palabra espec\'edfica relacionada con el tema seleccionado. Tambi\'e9n genera una segunda palabra o pista que est\'e9 relacionada pero sea ambigua para usarla con el impostor. Responde en formato JSON con los campos: 
+\f5 palabra_jugadores
+\f1  y 
+\f5 palabra_impostor
+\f1 .\'94\
+\
+La IA devolver\'e1 palabras nuevas en cada partida, garantizando variedad infinita.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 6. Flujo de pantallas
+\f1\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 1. Inicio
+\f1\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Crear sala\
+	\'95	Unirse a sala\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 2. Sala de espera
+\f1\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Lista de jugadores conectados\
+	\'95	Elecci\'f3n del tema (predefinido o personalizado)\
+	\'95	Bot\'f3n de iniciar (solo host)\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 3. Pantalla de rol
+\f1\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Indicador de rol: \'93Ciudadano\'94 o \'93Impostor\'94\
+	\'95	Palabra o pista correspondiente\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 4. Pantalla de debate
+\f1\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Muestra un temporizador\
+	\'95	Indicaciones generales del juego\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 5. Pantalla de votaci\'f3n
+\f1\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Lista de jugadores para votar\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\b\fs30 \cf2 6. Resultados
+\f1\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Revelaci\'f3n del impostor\
+	\'95	Opci\'f3n de jugar otra ronda\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 7. Asignaci\'f3n de roles
+\f1\b0\fs28 \
+\
+Al iniciar la partida:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	Se calcula el n\'famero de impostores.\
+	2.	Se mezcla la lista de jugadores aleatoriamente.\
+	3.	Los primeros N jugadores en la lista ser\'e1n impostores.\
+	4.	Se asigna el resto como ciudadanos.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 8. Gesti\'f3n de datos entre rondas
+\f1\b0\fs28 \
+\
+Cada ronda debe generar:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Nuevas palabras\
+	\'95	Nuevos roles\
+	\'95	Nueva pista para impostores\
+\
+Los jugadores permanecen en la misma sala.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 9. Elementos t\'e9cnicos generales
+\f1\b0\fs28 \
+\
+El juego requiere:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Sincronizaci\'f3n en tiempo real\
+	\'95	API de IA para generar palabras\
+	\'95	Sistema de salas\
+	\'95	Comunicaci\'f3n segura y privada de roles\
+	\'95	Mantener estado de partida\
+\
+La implementaci\'f3n puede realizarse con WebSockets, Firebase u otro backend en tiempo real.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f3\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\fs28 \cf2 \
+
+\f0\b\fs34 10. Prop\'f3sito del documento
+\f1\b0\fs28 \
+\
+Este documento describe la funcionalidad completa para que una IA (como Warp u otra capaz de generar c\'f3digo o arquitecturas) pueda:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Interpretar la idea de la app\
+	\'95	Dise\'f1ar la arquitectura\
+	\'95	Generar el backend\
+	\'95	Crear las pantallas del frontend\
+	\'95	Implementar la l\'f3gica de roles\
+	\'95	Integrar la IA para palabras\
+\
+Es una especificaci\'f3n t\'e9cnica y funcional inicial del juego \'93El Impostor\'94 personalizado.}

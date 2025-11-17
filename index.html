@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Impostor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Pantalla de inicio -->
+        <div id="screen-start" class="screen active">
+            <div class="container">
+                <h1 class="game-title">🎭 El Impostor</h1>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="showCreateRoom()">Crear Sala</button>
+                    <button class="btn btn-secondary" onclick="showJoinRoom()">Unirse a Sala</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de crear sala -->
+        <div id="screen-create" class="screen">
+            <div class="container">
+                <h2>Crear Sala</h2>
+                <input type="text" id="host-name" placeholder="Tu nombre" maxlength="20">
+                <button class="btn btn-primary" onclick="createRoom()">Crear</button>
+                <button class="btn btn-back" onclick="showScreen('screen-start')">Volver</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de unirse a sala -->
+        <div id="screen-join" class="screen">
+            <div class="container">
+                <h2>Unirse a Sala</h2>
+                <input type="text" id="join-code" placeholder="Código de sala" maxlength="6">
+                <input type="text" id="player-name" placeholder="Tu nombre" maxlength="20">
+                <button class="btn btn-primary" onclick="joinRoom()">Unirse</button>
+                <button class="btn btn-back" onclick="showScreen('screen-start')">Volver</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de espera (lobby) -->
+        <div id="screen-lobby" class="screen">
+            <div class="container">
+                <div class="room-header">
+                    <h2>Sala: <span id="room-code-display"></span></h2>
+                    <button class="btn btn-small" onclick="copyRoomCode()">📋 Copiar</button>
+                </div>
+                
+                <div class="players-section">
+                    <h3>Jugadores (<span id="player-count">0</span>)</h3>
+                    <div id="players-list"></div>
+                </div>
+
+                <div class="theme-section" id="theme-section">
+                    <h3>Tema</h3>
+                    <select id="theme-select" onchange="updateTheme()">
+                        <option value="futbolistas">⚽ Futbolistas</option>
+                        <option value="actores">🎬 Actores</option>
+                        <option value="comidas">🍕 Comidas</option>
+                        <option value="famosos">⭐ Famosos</option>
+                        <option value="animales">🦁 Animales</option>
+                        <option value="mixto">🎲 Mixto</option>
+                        <option value="personalizado">✏️ Personalizado</option>
+                    </select>
+                    <input type="text" id="custom-theme" placeholder="Escribe tu tema personalizado" style="display:none;">
+                </div>
+
+                <div class="lobby-actions">
+                    <button class="btn btn-primary" id="start-game-btn" onclick="startGame()" style="display:none;">Iniciar Partida</button>
+                    <button class="btn btn-danger" onclick="leaveRoom()">Salir</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de rol -->
+        <div id="screen-role" class="screen">
+            <div class="container">
+                <div class="role-card" id="role-card">
+                    <h2>Tu Rol</h2>
+                    <div class="role-badge" id="role-badge"></div>
+                    <div class="word-display" id="word-display"></div>
+                </div>
+                <button class="btn btn-primary" onclick="showScreen('screen-debate')">Continuar</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de debate -->
+        <div id="screen-debate" class="screen">
+            <div class="container">
+                <h2>💬 Fase de Debate</h2>
+                <div class="timer-display" id="timer-display">03:00</div>
+                <div class="info-box">
+                    <p><strong>Ciudadanos:</strong> Den pistas sobre su palabra sin revelarla directamente.</p>
+                    <p><strong>Impostores:</strong> Intenten descubrir la palabra y actúen como ciudadanos.</p>
+                </div>
+                <button class="btn btn-primary" onclick="showVoting()">Ir a Votación</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de votación -->
+        <div id="screen-voting" class="screen">
+            <div class="container">
+                <h2>🗳️ Votación</h2>
+                <p>¿Quién crees que es el impostor?</p>
+                <div id="voting-list"></div>
+                <div id="vote-status"></div>
+            </div>
+        </div>
+
+        <!-- Pantalla de resultados -->
+        <div id="screen-results" class="screen">
+            <div class="container">
+                <h2>📊 Resultados</h2>
+                <div id="results-content"></div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="playAgain()">Jugar Otra Ronda</button>
+                    <button class="btn btn-secondary" onclick="backToLobby()">Volver al Lobby</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" class="loading-overlay" style="display:none;">
+        <div class="spinner"></div>
+        <p>Generando palabras con IA...</p>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

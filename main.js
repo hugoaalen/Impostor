@@ -150,48 +150,64 @@ function showLobby() {
 // Configurar listeners de la sala
 function setupRoomListener() {
     const roomRef = ref(database, `rooms/${currentRoom}`);
+    let lastState = null;
     
     onValue(roomRef, (snapshot) => {
         const room = snapshot.val();
         if (!room) return;
 
-        // Actualizar lista de jugadores
-        const playersList = document.getElementById('players-list');
-        playersList.innerHTML = '';
-        
-        const players = room.players || {};
-        let count = 0;
-        
-        for (const [id, player] of Object.entries(players)) {
-            count++;
-            const div = document.createElement('div');
-            div.className = `player-item ${player.isHost ? 'host' : ''}`;
-            div.innerHTML = `
-                <span>${player.name}</span>
-                ${player.isHost ? '<span class="player-badge">Host</span>' : ''}
-            `;
-            playersList.appendChild(div);
-        }
-        
-        document.getElementById('player-count').textContent = count;
+        // Actualizar lista de jugadores (solo en lobby)
+        if (room.state !== 'playing' && room.state !== 'voting' && room.state !== 'results') {
+            const playersList = document.getElementById('players-list');
+            if (playersList) {
+                playersList.innerHTML = '';
+                
+                const players = room.players || {};
+                let count = 0;
+                
+                for (const [id, player] of Object.entries(players)) {
+                    count++;
+                    const div = document.createElement('div');
+                    div.className = `player-item ${player.isHost ? 'host' : ''}`;
+                    div.innerHTML = `
+                        <span>${player.name}</span>
+                        ${player.isHost ? '<span class="player-badge">Host</span>' : ''}
+                    `;
+                    playersList.appendChild(div);
+                }
+                
+                const countEl = document.getElementById('player-count');
+                if (countEl) countEl.textContent = count;
+            }
 
-        // Actualizar tema
-        if (room.theme) {
-            document.getElementById('theme-select').value = room.theme;
-            if (room.theme === 'personalizado') {
-                document.getElementById('custom-theme').style.display = 'block';
-                document.getElementById('custom-theme').value = room.customTheme || '';
+            // Actualizar tema
+            if (room.theme) {
+                const themeSelect = document.getElementById('theme-select');
+                if (themeSelect) themeSelect.value = room.theme;
+                if (room.theme === 'personalizado') {
+                    const customTheme = document.getElementById('custom-theme');
+                    if (customTheme) {
+                        customTheme.style.display = 'block';
+                        customTheme.value = room.customTheme || '';
+                    }
+                }
             }
         }
 
-        // Cambiar estado del juego
-        if (room.state === 'playing' && room.gameData) {
-            assignRoleToPlayer(room.gameData);
-            if (room.startingPlayer) showStartingPlayer(room.startingPlayer, room.players || {});
-        } else if (room.state === 'voting') {
-            showVotingScreen(players);
-        } else if (room.state === 'results') {
-            showResultsScreen(room.results);
+        // Cambiar estado del juego (solo si cambia el estado)
+        if (lastState !== room.state) {
+            lastState = room.state;
+            
+            if (room.state === 'playing' && room.gameData) {
+                assignRoleToPlayer(room.gameData);
+                if (room.startingPlayer) {
+                    showStartingPlayer(room.startingPlayer, room.players || {});
+                }
+            } else if (room.state === 'voting') {
+                showVotingScreen(room.players || {});
+            } else if (room.state === 'results') {
+                showResultsScreen(room.results);
+            }
         }
     });
 }
@@ -319,6 +335,7 @@ function getFallbackWords(theme) {
 // Asignar rol al jugador
 function assignRoleToPlayer(gameData) {
     const playerData = gameData[currentPlayer.id];
+    if (!playerData) return;
     
     const roleCard = document.getElementById('role-card');
     const roleBadge = document.getElementById('role-badge');
@@ -336,14 +353,6 @@ function assignRoleToPlayer(gameData) {
 
     wordDisplay.textContent = playerData.word;
     showScreen('screen-role');
-    // Mostrar si eres el jugador inicial (esto se completa por showStartingPlayer)
-    const startContainer = document.getElementById('starting-player-container');
-    const startDisplay = document.getElementById('starting-player-display');
-    if (startContainer && startDisplay && startDisplay.textContent) {
-        startContainer.style.display = 'block';
-    } else if (startContainer) {
-        startContainer.style.display = 'none';
-    }
 }
 
 // Mostrar el jugador que empieza
@@ -352,13 +361,13 @@ function showStartingPlayer(startingPlayerId, players) {
     const startDisplay = document.getElementById('starting-player-display');
     if (!startContainer || !startDisplay) return;
 
-    const playerName = players?.[startingPlayerId]?.name || startingPlayerId;
+    const playerName = players?.[startingPlayerId]?.name || 'Jugador';
     startDisplay.textContent = playerName;
     startContainer.style.display = 'block';
 
-    // Si yo soy el que empieza, mostrar un toast breve
+    // Si yo soy el que empieza, mostrar un toast
     if (currentPlayer && currentPlayer.id === startingPlayerId) {
-        showToast('¡Empiezas tú!');
+        setTimeout(() => showToast('¡Empiezas tú!'), 500);
     }
 }
 
@@ -392,6 +401,8 @@ window.showVoting = async function() {
 
 function showVotingScreen(players) {
     const votingList = document.getElementById('voting-list');
+    if (!votingList) return;
+    
     votingList.innerHTML = '';
 
     for (const [id, player] of Object.entries(players)) {
@@ -400,7 +411,9 @@ function showVotingScreen(players) {
         const button = document.createElement('button');
         button.className = 'vote-button';
         button.textContent = player.name;
-        button.onclick = () => vote(id);
+        button.onclick = (e) => {
+            vote(id);
+        };
         votingList.appendChild(button);
     }
 
@@ -409,31 +422,45 @@ function showVotingScreen(players) {
 
 // Votar
 async function vote(votedPlayerId) {
-    await set(ref(database, `rooms/${currentRoom}/votes/${currentPlayer.id}`), votedPlayerId);
-    
-    document.querySelectorAll('.vote-button').forEach(btn => btn.classList.remove('voted'));
-    event.target.classList.add('voted');
-    
-    document.getElementById('vote-status').innerHTML = '<strong>✓ Voto registrado</strong>';
+    try {
+        await set(ref(database, `rooms/${currentRoom}/votes/${currentPlayer.id}`), votedPlayerId);
+        
+        // Actualizar UI de votación
+        document.querySelectorAll('.vote-button').forEach(btn => btn.classList.remove('voted'));
+        event.target.classList.add('voted');
+        
+        const voteStatus = document.getElementById('vote-status');
+        if (voteStatus) voteStatus.innerHTML = '<strong>✓ Voto registrado</strong>';
 
-    if (isHost) {
-        checkAllVoted();
+        // El host revisa automáticamente si todos votaron
+        if (isHost) {
+            setTimeout(() => checkAllVoted(), 1000);
+        }
+    } catch (error) {
+        console.error('Error al votar:', error);
+        showToast('Error al registrar voto');
     }
 }
 
 // Verificar si todos votaron
 async function checkAllVoted() {
-    const roomRef = ref(database, `rooms/${currentRoom}`);
-    const snapshot = await new Promise(resolve => {
-        onValue(roomRef, resolve, { onlyOnce: true });
-    });
-    
-    const room = snapshot.val();
-    const playerCount = Object.keys(room.players || {}).length;
-    const voteCount = Object.keys(room.votes || {}).length;
+    try {
+        const roomRef = ref(database, `rooms/${currentRoom}`);
+        const snapshot = await new Promise(resolve => {
+            onValue(roomRef, resolve, { onlyOnce: true });
+        });
+        
+        const room = snapshot.val();
+        if (!room) return;
+        
+        const playerCount = Object.keys(room.players || {}).length;
+        const voteCount = Object.keys(room.votes || {}).length;
 
-    if (voteCount === playerCount) {
-        setTimeout(() => calculateResults(room), 2000);
+        if (voteCount === playerCount && playerCount > 0) {
+            await calculateResults(room);
+        }
+    } catch (error) {
+        console.error('Error verificando votos:', error);
     }
 }
 

@@ -187,6 +187,7 @@ function setupRoomListener() {
         // Cambiar estado del juego
         if (room.state === 'playing' && room.gameData) {
             assignRoleToPlayer(room.gameData);
+            if (room.startingPlayer) showStartingPlayer(room.startingPlayer, room.players || {});
         } else if (room.state === 'voting') {
             showVotingScreen(players);
         } else if (room.state === 'results') {
@@ -254,11 +255,16 @@ window.startGame = async function() {
             };
         });
 
+        // Elegir jugador inicial aleatorio
+        const startingPlayer = playerIds[Math.floor(Math.random() * playerIds.length)];
+
         await update(ref(database, `rooms/${currentRoom}`), {
             state: 'playing',
             gameData,
             words,
-            impostors
+            impostors,
+            startingPlayer,
+            currentTurn: startingPlayer
         });
 
     } catch (error) {
@@ -330,6 +336,30 @@ function assignRoleToPlayer(gameData) {
 
     wordDisplay.textContent = playerData.word;
     showScreen('screen-role');
+    // Mostrar si eres el jugador inicial (esto se completa por showStartingPlayer)
+    const startContainer = document.getElementById('starting-player-container');
+    const startDisplay = document.getElementById('starting-player-display');
+    if (startContainer && startDisplay && startDisplay.textContent) {
+        startContainer.style.display = 'block';
+    } else if (startContainer) {
+        startContainer.style.display = 'none';
+    }
+}
+
+// Mostrar el jugador que empieza
+function showStartingPlayer(startingPlayerId, players) {
+    const startContainer = document.getElementById('starting-player-container');
+    const startDisplay = document.getElementById('starting-player-display');
+    if (!startContainer || !startDisplay) return;
+
+    const playerName = players?.[startingPlayerId]?.name || startingPlayerId;
+    startDisplay.textContent = playerName;
+    startContainer.style.display = 'block';
+
+    // Si yo soy el que empieza, mostrar un toast breve
+    if (currentPlayer && currentPlayer.id === startingPlayerId) {
+        showToast('¡Empiezas tú!');
+    }
 }
 
 // Temporizador de debate

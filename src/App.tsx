@@ -47,10 +47,16 @@ function App() {
   const toggleCategory = (id: string) => {
     setSelectedCategories((current) =>
       current.includes(id)
-        ? current.length === 1
-          ? current
-          : current.filter((categoryId) => categoryId !== id)
+        ? current.filter((categoryId) => categoryId !== id)
         : [...current, id],
+    );
+  };
+
+  const toggleAllCategories = () => {
+    setSelectedCategories((current) =>
+      current.length === categories.length
+        ? []
+        : categories.map((category) => category.id),
     );
   };
 
@@ -236,6 +242,32 @@ function App() {
             </div>
 
             <div className="category-grid">
+              <button
+                className={`category-card all-categories-card ${
+                  selectedCategories.length === categories.length ? "selected" : ""
+                } ${selectedCategories.length > 0 && selectedCategories.length < categories.length ? "partial" : ""}`}
+                onClick={toggleAllCategories}
+                style={{ "--category-color": "#f26a2e" } as React.CSSProperties}
+                aria-pressed={selectedCategories.length === categories.length}
+              >
+                <span className="category-emoji">✨</span>
+                <span className="category-copy">
+                  <strong>Todas</strong>
+                  <small>
+                    {selectedCategories.length === categories.length
+                      ? `Las ${categories.length} categorías seleccionadas`
+                      : "Seleccionar todo el catálogo"}
+                  </small>
+                </span>
+                <span className="check">
+                  {selectedCategories.length === categories.length
+                    ? "✓"
+                    : selectedCategories.length > 0
+                      ? "−"
+                      : ""}
+                </span>
+              </button>
+
               {categories.map((category) => {
                 const selected = selectedCategories.includes(category.id);
                 return (
@@ -260,10 +292,18 @@ function App() {
 
           <div className="sticky-action">
             <div>
-              <span>{selectedCategories.length} categorías</span>
+              <span>
+                {selectedCategories.length === categories.length
+                  ? "Todas las categorías"
+                  : `${selectedCategories.length} categorías`}
+              </span>
               <small>{players} jugadores · {impostors} impostor{impostors > 1 ? "es" : ""}</small>
             </div>
-            <button className="primary-button" onClick={startGame}>
+            <button
+              className="primary-button"
+              onClick={startGame}
+              disabled={selectedCategories.length === 0}
+            >
               Empezar <span>→</span>
             </button>
           </div>

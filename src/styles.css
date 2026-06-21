@@ -519,6 +519,29 @@ button:focus-visible {
   box-shadow: inset 0 0 0 1px var(--category-color);
 }
 
+.all-categories-card {
+  grid-column: 1 / -1;
+  min-height: 82px;
+  background:
+    linear-gradient(105deg, rgba(242, 106, 46, 0.12), transparent 58%),
+    var(--panel);
+}
+
+.all-categories-card .category-emoji {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: rgba(242, 106, 46, 0.13);
+}
+
+.all-categories-card.partial .check {
+  opacity: 1;
+  color: var(--orange);
+  background: rgba(242, 106, 46, 0.16);
+}
+
 .category-card:hover {
   transform: translateY(-2px);
 }

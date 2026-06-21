@@ -40,8 +40,9 @@ describe("createRound", () => {
   });
 
   it("provides a broad catalogue without duplicates inside categories", () => {
-    expect(categories).toHaveLength(8);
+    expect(categories).toHaveLength(17);
     expect(categories.every((category) => category.words.length >= 50)).toBe(true);
+    expect(categories.reduce((total, category) => total + category.words.length, 0)).toBeGreaterThanOrEqual(940);
     expect(
       categories.every(
         (category) =>

@@ -1,0 +1,18 @@
+{
+  "name": "¿Quién finge?",
+  "short_name": "Impostor",
+  "description": "El juego del impostor por categorías.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#171510",
+  "theme_color": "#171510",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

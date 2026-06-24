@@ -20,7 +20,11 @@ describe("saved settings", () => {
     saveSettings({
       players: 7,
       impostors: 2,
-      impostorHintsEnabled: false,
+      impostorClueMode: "similar",
+      wordDifficulty: "hard",
+      roundDuration: 180,
+      avoidRecentWords: false,
+      contentMode: "adult",
       selectedCategories: ["lugares", "deportes"],
       customPlayerNames: ["Hugo", "Ana", ...Array.from({ length: 12 }, () => "")],
     });
@@ -30,7 +34,11 @@ describe("saved settings", () => {
     expect(settings).toMatchObject({
       players: 7,
       impostors: 2,
-      impostorHintsEnabled: false,
+      impostorClueMode: "similar",
+      wordDifficulty: "hard",
+      roundDuration: 180,
+      avoidRecentWords: false,
+      contentMode: "adult",
       selectedCategories: ["lugares", "deportes"],
     });
     expect(settings.customPlayerNames.slice(0, 2)).toEqual(["Hugo", "Ana"]);
@@ -48,12 +56,27 @@ describe("saved settings", () => {
       JSON.stringify({
         players: 4,
         impostors: 1,
-        impostorHintsEnabled: true,
+        impostorClueMode: "hint",
         selectedCategories: ["inventada", "comida"],
         customPlayerNames: [],
       }),
     );
 
     expect(loadSettings().selectedCategories).toEqual(["comida"]);
+  });
+
+  it("migrates the old impostor hint toggle", () => {
+    localStorage.setItem(
+      "impostor-settings-v1",
+      JSON.stringify({
+        players: 5,
+        impostors: 1,
+        impostorHintsEnabled: false,
+        selectedCategories: ["comida"],
+        customPlayerNames: [],
+      }),
+    );
+
+    expect(loadSettings().impostorClueMode).toBe("none");
   });
 });

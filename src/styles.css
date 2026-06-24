@@ -293,7 +293,7 @@ button:focus-visible {
   display: grid;
   grid-template-columns: 64px 1fr 64px;
   align-items: center;
-  margin: 24px 0 12px 52px;
+  margin: 24px 0 12px;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 22px;
@@ -334,13 +334,24 @@ button:focus-visible {
   font-size: 12px;
 }
 
+.impostor-settings {
+  margin: 16px 0 0;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.settings-heading {
+  margin-top: 34px;
+}
+
 .impostor-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-left: 52px;
-  padding: 18px 0 26px;
+  padding: 18px;
 }
 
 .impostor-row > div:first-child {
@@ -366,18 +377,74 @@ button:focus-visible {
   font-size: 20px;
 }
 
+.options-panel {
+  display: flex;
+  flex-direction: column;
+  margin: 18px 0 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--panel);
+}
+
+.setting-block {
+  padding: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.setting-block:first-child {
+  border-top: 0;
+}
+
+.setting-block > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-block small,
+.setting-toggle small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.segmented-control button {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.segmented-control button.active {
+  border-color: var(--orange);
+  color: var(--ink);
+  background: var(--orange);
+}
+
 .setting-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: calc(100% - 52px);
-  min-height: 74px;
-  margin: 0 0 0 52px;
-  padding: 14px 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  width: 100%;
+  min-height: 72px;
+  padding: 16px 18px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
   color: var(--cream);
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.025);
   text-align: left;
   cursor: pointer;
 }
@@ -387,11 +454,6 @@ button:focus-visible {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-}
-
-.setting-toggle small {
-  color: var(--muted);
-  line-height: 1.35;
 }
 
 .switch {
@@ -424,17 +486,75 @@ button:focus-visible {
   transform: translateX(20px);
 }
 
+.setting-group {
+  border-top: 1px solid var(--line);
+}
+
+.setting-group .setting-toggle {
+  border-top: 0;
+}
+
+.history-reset {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 68px;
+  padding: 0 18px 16px;
+  border: 0;
+  color: var(--cream);
+  background: rgba(255, 255, 255, 0.025);
+  text-align: left;
+  cursor: pointer;
+}
+
+.history-reset-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  color: var(--orange);
+  background: rgba(242, 106, 46, 0.12);
+  font-weight: 900;
+}
+
+.history-reset > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.history-reset strong {
+  font-size: 14px;
+}
+
+.history-reset small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.history-reset.done .history-reset-icon {
+  color: var(--ink);
+  background: var(--orange);
+}
+
+.history-reset.done strong {
+  color: var(--orange);
+}
+
 .names-heading {
-  margin-top: 16px;
+  margin-top: 34px;
 }
 
 .names-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: calc(100% - 52px);
+  width: 100%;
   min-height: 72px;
-  margin: 22px 0 0 52px;
+  margin: 22px 0 0;
   padding: 14px 18px;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -448,6 +568,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .names-toggle small {
@@ -455,20 +576,42 @@ button:focus-visible {
 }
 
 .toggle-chevron {
-  color: var(--orange);
-  font-size: 25px;
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-left: 14px;
+  border-radius: 13px;
+  background: rgba(242, 106, 46, 0.12);
+  transition: background 160ms ease;
+}
+
+.toggle-chevron::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-right: 3px solid var(--orange);
+  border-bottom: 3px solid var(--orange);
+  transform: translateY(-2px) rotate(45deg);
   transition: transform 160ms ease;
 }
 
 .toggle-chevron.open {
-  transform: rotate(180deg);
+  background: var(--orange);
+}
+
+.toggle-chevron.open::before {
+  border-color: var(--ink);
+  transform: translateY(2px) rotate(225deg);
 }
 
 .player-name-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin: 12px 0 0 52px;
+  margin: 12px 0 0;
 }
 
 .player-name-field {
@@ -854,6 +997,15 @@ button:focus-visible {
   font: 800 15px/1.35 "Avenir Next", "Segoe UI", system-ui, sans-serif;
 }
 
+.impostor-hint.decoy-word {
+  text-align: center;
+}
+
+.impostor-hint.decoy-word strong {
+  font-size: 26px;
+  line-height: 1.1;
+}
+
 .category-pill {
   margin-top: 28px;
   padding: 9px 13px;
@@ -893,6 +1045,35 @@ button:focus-visible {
 .round-screen h2 {
   margin-top: 12px;
   font-size: clamp(38px, 8vw, 58px);
+}
+
+.timer-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 12px 0 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+}
+
+.timer-card span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.timer-card strong {
+  font: 800 30px "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+
+.timer-card.finished {
+  border-color: rgba(242, 106, 46, 0.5);
+  background: rgba(242, 106, 46, 0.12);
 }
 
 .starter-card {
@@ -963,6 +1144,56 @@ button:focus-visible {
   cursor: pointer;
 }
 
+.results-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.results-screen h2 {
+  margin: 12px 0 24px;
+  font-size: clamp(34px, 8vw, 56px);
+}
+
+.results-screen h2 span {
+  color: var(--orange);
+}
+
+.result-panel {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--panel);
+  text-align: left;
+}
+
+.result-panel > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.result-panel > div:first-child {
+  border-top: 0;
+}
+
+.result-panel span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.result-panel strong {
+  font: 800 22px "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 520px) {
   .hero {
     margin-top: 58px;
@@ -1001,17 +1232,6 @@ button:focus-visible {
 
   .category-card {
     min-height: 82px;
-  }
-
-  .counter-panel,
-  .impostor-row,
-  .names-toggle,
-  .player-name-grid {
-    margin-left: 0;
-  }
-
-  .names-toggle {
-    width: 100%;
   }
 
   .player-name-grid {

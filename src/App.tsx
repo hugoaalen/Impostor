@@ -1,17 +1,45 @@
 import { useEffect, useMemo, useState } from "react";
-import { categories, createRound, type Round } from "./game";
-import { loadSettings, saveSettings } from "./settings";
+import { categories, createRound, resetWordHistory, type Round } from "./game";
+import {
+  loadSettings,
+  saveSettings,
+  type ContentMode,
+  type ImpostorClueMode,
+  type RoundDuration,
+  type WordDifficulty,
+} from "./settings";
 
-type Screen = "home" | "setup" | "reveal" | "round";
+type Screen = "home" | "setup" | "reveal" | "round" | "results";
+
+const timerOptions: { label: string; value: RoundDuration }[] = [
+  { label: "Sin límite", value: 0 },
+  { label: "2 min", value: 120 },
+  { label: "3 min", value: 180 },
+  { label: "5 min", value: 300 },
+];
+
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
 
 function App() {
   const [initialSettings] = useState(loadSettings);
   const [screen, setScreen] = useState<Screen>("home");
   const [players, setPlayers] = useState(initialSettings.players);
   const [impostors, setImpostors] = useState(initialSettings.impostors);
-  const [impostorHintsEnabled, setImpostorHintsEnabled] = useState(
-    initialSettings.impostorHintsEnabled,
+  const [impostorClueMode, setImpostorClueMode] = useState<ImpostorClueMode>(
+    initialSettings.impostorClueMode,
   );
+  const [wordDifficulty, setWordDifficulty] = useState<WordDifficulty>(
+    initialSettings.wordDifficulty,
+  );
+  const [roundDuration, setRoundDuration] = useState<RoundDuration>(
+    initialSettings.roundDuration,
+  );
+  const [avoidRecentWords, setAvoidRecentWords] = useState(initialSettings.avoidRecentWords);
+  const [contentMode, setContentMode] = useState<ContentMode>(initialSettings.contentMode);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     initialSettings.selectedCategories,
   );
@@ -22,6 +50,8 @@ function App() {
   const [round, setRound] = useState<Round | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [cardRevealed, setCardRevealed] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number>(initialSettings.roundDuration);
+  const [wordHistoryCleared, setWordHistoryCleared] = useState(false);
 
   const playerNames = useMemo(
     () =>
@@ -36,11 +66,37 @@ function App() {
     saveSettings({
       players,
       impostors,
-      impostorHintsEnabled,
+      impostorClueMode,
+      wordDifficulty,
+      roundDuration,
+      avoidRecentWords,
+      contentMode,
       selectedCategories,
       customPlayerNames,
     });
-  }, [customPlayerNames, impostorHintsEnabled, impostors, players, selectedCategories]);
+  }, [
+    avoidRecentWords,
+    contentMode,
+    customPlayerNames,
+    impostorClueMode,
+    impostors,
+    players,
+    roundDuration,
+    selectedCategories,
+    wordDifficulty,
+  ]);
+
+  useEffect(() => {
+    if (screen !== "round" || roundDuration === 0 || timeLeft <= 0) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setTimeLeft((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [roundDuration, screen, timeLeft]);
 
   const setPlayerCount = (nextPlayers: number) => {
     const bounded = Math.min(14, Math.max(3, nextPlayers));
@@ -73,10 +129,16 @@ function App() {
   };
 
   const startGame = () => {
-    const nextRound = createRound(selectedCategories, players, impostors);
+    const nextRound = createRound(selectedCategories, players, impostors, {
+      impostorClueMode,
+      wordDifficulty,
+      avoidRecentWords,
+      contentMode,
+    });
     setRound(nextRound);
     setCurrentPlayer(0);
     setCardRevealed(false);
+    setTimeLeft(roundDuration);
     setScreen("reveal");
   };
 
@@ -94,7 +156,14 @@ function App() {
     setRound(null);
     setCurrentPlayer(0);
     setCardRevealed(false);
+    setTimeLeft(roundDuration);
     setScreen("setup");
+  };
+
+  const clearWordHistory = () => {
+    resetWordHistory();
+    setWordHistoryCleared(true);
+    window.setTimeout(() => setWordHistoryCleared(false), 1800);
   };
 
   return (
@@ -172,38 +241,156 @@ function App() {
               <button onClick={() => setPlayerCount(players + 1)} aria-label="Añadir jugador">+</button>
             </div>
 
-            <div className="impostor-row">
-              <div>
-                <strong>Impostores</strong>
-                <span>¿Cuántos no conocerán la palabra?</span>
+            <div className="impostor-settings">
+              <div className="impostor-row">
+                <div>
+                  <strong>Impostores</strong>
+                  <span>¿Cuántos no conocerán la palabra?</span>
+                </div>
+                <div className="small-counter">
+                  <button onClick={() => setImpostors(Math.max(1, impostors - 1))}>−</button>
+                  <strong>{impostors}</strong>
+                  <button onClick={() => setImpostors(Math.min(players - 2, impostors + 1))}>+</button>
+                </div>
               </div>
-              <div className="small-counter">
-                <button onClick={() => setImpostors(Math.max(1, impostors - 1))}>−</button>
-                <strong>{impostors}</strong>
-                <button onClick={() => setImpostors(Math.min(players - 2, impostors + 1))}>+</button>
+
+              <div className="setting-block">
+                <div>
+                  <strong>Ayuda para impostores</strong>
+                  <small>
+                    {impostorClueMode === "none" && "El impostor irá totalmente a ciegas"}
+                    {impostorClueMode === "hint" && "Verá una pista amplia de la categoría"}
+                    {impostorClueMode === "similar" && "Recibirá una palabra parecida para camuflarse"}
+                  </small>
+                </div>
+                <div className="segmented-control" role="group" aria-label="Ayuda para impostores">
+                  {[
+                    ["none", "Nada"],
+                    ["hint", "Pista"],
+                    ["similar", "Parecida"],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      className={impostorClueMode === value ? "active" : ""}
+                      onClick={() => setImpostorClueMode(value as ImpostorClueMode)}
+                      aria-pressed={impostorClueMode === value}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <button
-              className={`setting-toggle ${impostorHintsEnabled ? "active" : ""}`}
-              onClick={() => setImpostorHintsEnabled((current) => !current)}
-              aria-pressed={impostorHintsEnabled}
-            >
-              <span>
-                <strong>Pista para impostores</strong>
-                <small>
-                  {impostorHintsEnabled
-                    ? "El impostor verá una pista amplia de la categoría"
-                    : "El impostor irá totalmente a ciegas"}
-                </small>
-              </span>
-              <span className="switch" aria-hidden="true">
-                <span />
-              </span>
-            </button>
+            <div className="section-heading settings-heading">
+              <span className="step-number">02</span>
+              <div>
+                <h2>Ajustes de ronda</h2>
+                <p>Dale el punto justo de caos, dificultad y ritmo.</p>
+              </div>
+            </div>
+
+            <div className="options-panel">
+              <div className="setting-block">
+                <div>
+                  <strong>Dificultad</strong>
+                  <small>Controla lo reconocibles que serán las palabras.</small>
+                </div>
+                <div className="segmented-control" role="group" aria-label="Dificultad de palabras">
+                  {[
+                    ["easy", "Fácil"],
+                    ["normal", "Normal"],
+                    ["hard", "Difícil"],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      className={wordDifficulty === value ? "active" : ""}
+                      onClick={() => setWordDifficulty(value as WordDifficulty)}
+                      aria-pressed={wordDifficulty === value}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="setting-block">
+                <div>
+                  <strong>Temporizador</strong>
+                  <small>Opcional. Útil si el debate se eterniza.</small>
+                </div>
+                <div className="segmented-control" role="group" aria-label="Temporizador">
+                  {timerOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      className={roundDuration === option.value ? "active" : ""}
+                      onClick={() => setRoundDuration(option.value)}
+                      aria-pressed={roundDuration === option.value}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="setting-group">
+                <button
+                  className={`setting-toggle ${avoidRecentWords ? "active" : ""}`}
+                  onClick={() => setAvoidRecentWords((current) => !current)}
+                  aria-pressed={avoidRecentWords}
+                >
+                  <span>
+                    <strong>Evitar palabras recientes</strong>
+                    <small>{avoidRecentWords ? "Reduce repeticiones entre partidas" : "Permite que cualquier palabra salga de nuevo"}</small>
+                  </span>
+                  <span className="switch" aria-hidden="true"><span /></span>
+                </button>
+
+                <button
+                  className={`history-reset ${wordHistoryCleared ? "done" : ""}`}
+                  onClick={clearWordHistory}
+                  type="button"
+                  aria-live="polite"
+                >
+                  <span className="history-reset-icon" aria-hidden="true">
+                    {wordHistoryCleared ? "✓" : "↻"}
+                  </span>
+                  <span>
+                    <strong>{wordHistoryCleared ? "Historial reiniciado" : "Reiniciar historial"}</strong>
+                    <small>
+                      {wordHistoryCleared
+                        ? "Las próximas palabras parten de cero"
+                        : "Úsalo si queréis volver a mezclar todo el catálogo"}
+                    </small>
+                  </span>
+                </button>
+              </div>
+
+              <div className="setting-block">
+                <div>
+                  <strong>Contenido</strong>
+                  <small>{contentMode === "family" ? "Sin referencias de fiesta más adultas" : "Añade palabras más de noche y salseo"}</small>
+                </div>
+                <div className="segmented-control" role="group" aria-label="Tipo de contenido">
+                  {[
+                    ["family", "Familiar"],
+                    ["adult", "Adultos"],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      className={contentMode === value ? "active" : ""}
+                      onClick={() => setContentMode(value as ContentMode)}
+                      aria-pressed={contentMode === value}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             <div className="section-heading names-heading">
-              <span className="step-number">02</span>
+              <span className="step-number">03</span>
               <div>
                 <h2>Nombres</h2>
                 <p>Opcional. Si lo dejas vacío, usaremos Jugador 1, 2, 3…</p>
@@ -224,7 +411,7 @@ function App() {
                     : "Mantener nombres automáticos"}
                 </small>
               </span>
-              <span className={`toggle-chevron ${showPlayerNames ? "open" : ""}`}>⌄</span>
+              <span className={`toggle-chevron ${showPlayerNames ? "open" : ""}`} aria-hidden="true" />
             </button>
 
             {showPlayerNames && (
@@ -256,7 +443,7 @@ function App() {
             )}
 
             <div className="section-heading category-heading">
-              <span className="step-number">03</span>
+              <span className="step-number">04</span>
               <div>
                 <h2>Elige categorías</h2>
                 <p>Mezclaremos palabras de todas las seleccionadas.</p>
@@ -364,8 +551,18 @@ function App() {
                 <span className="role-emoji">🕵️</span>
                 <span className="tiny-label">TU ROL ES</span>
                 <strong>IMPOSTOR</strong>
-                <p>No conoces la palabra. Escucha, improvisa y que no te descubran.</p>
-                {impostorHintsEnabled && (
+                {impostorClueMode === "similar" && round.impostorWord ? (
+                  <>
+                    <p>No tienes la palabra real, pero puedes camuflarte con esta:</p>
+                    <div className="impostor-hint decoy-word">
+                      <span>Palabra parecida</span>
+                      <strong>{round.impostorWord}</strong>
+                    </div>
+                  </>
+                ) : (
+                  <p>No conoces la palabra. Escucha, improvisa y que no te descubran.</p>
+                )}
+                {impostorClueMode === "hint" && (
                   <div className="impostor-hint">
                     <span>Pista</span>
                     <strong>{round.impostorHint}</strong>
@@ -402,6 +599,12 @@ function App() {
           <div className="round-icon">{round.category.emoji}</div>
           <p className="eyebrow">Empieza la ronda</p>
           <h2>Hablad. Dudad.<br />No regaléis la palabra.</h2>
+          {roundDuration > 0 && (
+            <div className={`timer-card ${timeLeft === 0 ? "finished" : ""}`}>
+              <span>{timeLeft === 0 ? "Tiempo agotado" : "Tiempo restante"}</span>
+              <strong>{formatTime(timeLeft)}</strong>
+            </div>
+          )}
           <div className="starter-card">
             <span>Empieza dando una pista</span>
             <strong>{playerNames[round.startingPlayer]}</strong>
@@ -411,6 +614,43 @@ function App() {
             <div><span>1</span><p>Cada persona da una pista relacionada.</p></div>
             <div><span>2</span><p>Comentad quién parece estar improvisando.</p></div>
             <div><span>3</span><p>Cuando queráis, señalad al impostor en persona.</p></div>
+          </div>
+
+          <div className="round-actions">
+            <button className="primary-button full-width" onClick={() => setScreen("results")}>
+              Revelar resultado <span>→</span>
+            </button>
+            <button className="text-button" onClick={startGame}>Otra ronda sin revelar</button>
+            <button className="text-button" onClick={resetGame}>Cambiar configuración</button>
+          </div>
+        </section>
+      )}
+
+      {screen === "results" && round && (
+        <section className="screen results-screen">
+          <div className="round-icon">{round.category.emoji}</div>
+          <p className="eyebrow">Resultado</p>
+          <h2>La palabra era<br /><span>{round.word}</span></h2>
+
+          <div className="result-panel">
+            <div>
+              <span>Categoría</span>
+              <strong>{round.category.emoji} {round.category.name}</strong>
+            </div>
+            {round.impostorWord && (
+              <div>
+                <span>Palabra parecida</span>
+                <strong>{round.impostorWord}</strong>
+              </div>
+            )}
+            <div>
+              <span>{round.impostorIndexes.length > 1 ? "Impostores" : "Impostor"}</span>
+              <strong>
+                {round.impostorIndexes
+                  .map((index) => playerNames[index])
+                  .join(", ")}
+              </strong>
+            </div>
           </div>
 
           <div className="round-actions">

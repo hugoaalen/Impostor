@@ -1,9 +1,18 @@
 import { categories } from "./game";
 
+export type ImpostorClueMode = "none" | "hint" | "similar";
+export type WordDifficulty = "easy" | "normal" | "hard";
+export type ContentMode = "family" | "adult";
+export type RoundDuration = 0 | 120 | 180 | 300;
+
 export type GameSettings = {
   players: number;
   impostors: number;
-  impostorHintsEnabled: boolean;
+  impostorClueMode: ImpostorClueMode;
+  wordDifficulty: WordDifficulty;
+  roundDuration: RoundDuration;
+  avoidRecentWords: boolean;
+  contentMode: ContentMode;
   selectedCategories: string[];
   customPlayerNames: string[];
 };
@@ -11,16 +20,42 @@ export type GameSettings = {
 export const DEFAULT_SETTINGS: GameSettings = {
   players: 5,
   impostors: 1,
-  impostorHintsEnabled: true,
+  impostorClueMode: "hint",
+  wordDifficulty: "normal",
+  roundDuration: 0,
+  avoidRecentWords: true,
+  contentMode: "family",
   selectedCategories: ["comida", "animales", "cine"],
   customPlayerNames: Array.from({ length: 14 }, () => ""),
 };
 
 const SETTINGS_KEY = "impostor-settings-v1";
 
+function parseImpostorClueMode(stored: Partial<GameSettings> & { impostorHintsEnabled?: boolean }) {
+  if (stored.impostorClueMode === "none" || stored.impostorClueMode === "hint" || stored.impostorClueMode === "similar") {
+    return stored.impostorClueMode;
+  }
+
+  return stored.impostorHintsEnabled === false ? "none" : DEFAULT_SETTINGS.impostorClueMode;
+}
+
+function parseWordDifficulty(value: unknown): WordDifficulty {
+  return value === "easy" || value === "hard" ? value : DEFAULT_SETTINGS.wordDifficulty;
+}
+
+function parseRoundDuration(value: unknown): RoundDuration {
+  return value === 120 || value === 180 || value === 300 ? value : DEFAULT_SETTINGS.roundDuration;
+}
+
+function parseContentMode(value: unknown): ContentMode {
+  return value === "adult" ? "adult" : DEFAULT_SETTINGS.contentMode;
+}
+
 export function loadSettings(): GameSettings {
   try {
-    const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}") as Partial<GameSettings>;
+    const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}") as Partial<GameSettings> & {
+      impostorHintsEnabled?: boolean;
+    };
     const players = Math.min(14, Math.max(3, Number(stored.players) || DEFAULT_SETTINGS.players));
     const impostors = Math.min(
       Math.max(1, Number(stored.impostors) || DEFAULT_SETTINGS.impostors),
@@ -42,7 +77,11 @@ export function loadSettings(): GameSettings {
     return {
       players,
       impostors,
-      impostorHintsEnabled: stored.impostorHintsEnabled !== false,
+      impostorClueMode: parseImpostorClueMode(stored),
+      wordDifficulty: parseWordDifficulty(stored.wordDifficulty),
+      roundDuration: parseRoundDuration(stored.roundDuration),
+      avoidRecentWords: stored.avoidRecentWords !== false,
+      contentMode: parseContentMode(stored.contentMode),
       selectedCategories: selectedCategories.length
         ? selectedCategories
         : DEFAULT_SETTINGS.selectedCategories,

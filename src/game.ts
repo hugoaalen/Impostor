@@ -11,8 +11,16 @@ export type Round = {
   category: Category;
   word: string;
   impostorHint: string;
+  impostorWord: string | null;
   impostorIndexes: number[];
   startingPlayer: number;
+};
+
+export type CreateRoundOptions = {
+  impostorClueMode?: "none" | "hint" | "similar";
+  wordDifficulty?: "easy" | "normal" | "hard";
+  avoidRecentWords?: boolean;
+  contentMode?: "family" | "adult";
 };
 
 export const categories: Category[] = [
@@ -266,6 +274,36 @@ export const categories: Category[] = [
 const HISTORY_KEY = "impostor-word-history";
 const IMPOSTOR_HISTORY_KEY = "impostor-player-history";
 
+const familyBlockedWords = new Set([
+  "After",
+  "Barra libre",
+  "Champán",
+  "Chupito",
+  "Resaca",
+]);
+
+const adultExtraWords: Record<string, string[]> = {
+  fiesta: [
+    "Botellón",
+    "Ligue",
+    "Cita de Tinder",
+    "Discoteca after",
+    "Copas",
+    "Perreo",
+    "Kebab de madrugada",
+    "Mensaje a tu ex",
+    "Amnesia selectiva",
+    "Beso robado",
+  ],
+  internet: [
+    "Shippeo",
+    "Salseo",
+    "Hatewatch",
+    "Cancelación",
+    "Drama de Twitch",
+  ],
+};
+
 const impostorHints: Record<string, string> = {
   comida: "Es algo que podrías comer, pedir o preparar.",
   animales: "Es un ser vivo. Piensa en tamaño, hábitat o comportamiento.",
@@ -298,11 +336,23 @@ function getHistory(): string[] {
   }
 }
 
+export function getWordHistorySize() {
+  return getHistory().length;
+}
+
 function saveHistory(history: string[]) {
   try {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   } catch {
     // El historial es una mejora, nunca debe impedir que empiece una partida.
+  }
+}
+
+export function resetWordHistory() {
+  try {
+    localStorage.removeItem(HISTORY_KEY);
+  } catch {
+    // Si el navegador bloquea almacenamiento, simplemente no hay historial que limpiar.
   }
 }
 
@@ -369,11 +419,68 @@ function pickImpostorIndexes(playerCount: number, impostorCount: number): number
   return selectedPlayers;
 }
 
+function getWordsForContentMode(category: Category, contentMode: CreateRoundOptions["contentMode"]) {
+  const baseWords = contentMode === "adult"
+    ? [...category.words, ...(adultExtraWords[category.id] ?? [])]
+    : category.words.filter((word) => !familyBlockedWords.has(word));
+
+  return baseWords.length ? baseWords : category.words;
+}
+
+function getWordsForDifficulty(words: string[], difficulty: CreateRoundOptions["wordDifficulty"]) {
+  if (difficulty === "easy") {
+    return words.slice(0, Math.max(18, Math.ceil(words.length * 0.45)));
+  }
+
+  if (difficulty === "hard") {
+    return words.slice(Math.floor(words.length * 0.45));
+  }
+
+  return words;
+}
+
+function pickWord(
+  category: Category,
+  options: Required<Pick<CreateRoundOptions, "wordDifficulty" | "avoidRecentWords" | "contentMode">>,
+) {
+  const availableWords = getWordsForDifficulty(
+    getWordsForContentMode(category, options.contentMode),
+    options.wordDifficulty,
+  );
+  const history = getHistory();
+  const freshWords = options.avoidRecentWords
+    ? availableWords.filter((word) => !history.includes(`${category.id}:${word}`))
+    : availableWords;
+  const word = randomItem(freshWords.length ? freshWords : availableWords);
+
+  if (options.avoidRecentWords) {
+    saveHistory([...history, `${category.id}:${word}`].slice(-240));
+  }
+
+  return word;
+}
+
+function pickImpostorWord(category: Category, realWord: string, options: Required<Pick<CreateRoundOptions, "wordDifficulty" | "contentMode">>) {
+  const candidates = getWordsForDifficulty(
+    getWordsForContentMode(category, options.contentMode),
+    options.wordDifficulty,
+  ).filter((word) => word !== realWord);
+
+  return candidates.length ? randomItem(candidates) : null;
+}
+
 export function createRound(
   selectedCategoryIds: string[],
   playerCount: number,
   impostorCount: number,
+  options: CreateRoundOptions = {},
 ): Round {
+  const roundOptions = {
+    impostorClueMode: options.impostorClueMode ?? "hint",
+    wordDifficulty: options.wordDifficulty ?? "normal",
+    avoidRecentWords: options.avoidRecentWords ?? true,
+    contentMode: options.contentMode ?? "family",
+  } satisfies Required<CreateRoundOptions>;
   const availableCategories = categories.filter((category) =>
     selectedCategoryIds.includes(category.id),
   );
@@ -381,20 +488,17 @@ export function createRound(
     availableCategories.length ? availableCategories : categories,
   );
 
-  const history = getHistory();
-  const freshWords = category.words.filter(
-    (word) => !history.includes(`${category.id}:${word}`),
-  );
-  const word = randomItem(freshWords.length ? freshWords : category.words);
-  const updatedHistory = [...history, `${category.id}:${word}`].slice(-240);
-  saveHistory(updatedHistory);
-
+  const word = pickWord(category, roundOptions);
+  const impostorWord = roundOptions.impostorClueMode === "similar"
+    ? pickImpostorWord(category, word, roundOptions)
+    : null;
   const impostorIndexes = pickImpostorIndexes(playerCount, impostorCount);
 
   return {
     category,
     word,
     impostorHint: impostorHints[category.id] ?? category.description,
+    impostorWord,
     impostorIndexes,
     startingPlayer: Math.floor(Math.random() * playerCount),
   };

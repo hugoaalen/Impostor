@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { categories, createRound } from "./game";
+import { categories, createRound, getWordHistorySize, resetWordHistory } from "./game";
 
 describe("createRound", () => {
   beforeEach(() => {
@@ -43,6 +43,29 @@ describe("createRound", () => {
     const round = createRound(["videojuegos"], 5, 1);
 
     expect(round.impostorHint).toContain("gaming");
+  });
+
+  it("can give impostors a similar word", () => {
+    const round = createRound(["comida"], 5, 1, { impostorClueMode: "similar" });
+
+    expect(round.impostorWord).toBeTruthy();
+    expect(round.impostorWord).not.toBe(round.word);
+  });
+
+  it("can disable recent word history", () => {
+    createRound(["cine"], 5, 1, { avoidRecentWords: false });
+
+    expect(localStorage.getItem("impostor-word-history")).toBeNull();
+  });
+
+  it("can reset word history", () => {
+    createRound(["cine"], 5, 1);
+
+    expect(getWordHistorySize()).toBe(1);
+
+    resetWordHistory();
+
+    expect(getWordHistorySize()).toBe(0);
   });
 
   it("still allows recent impostors to repeat", () => {

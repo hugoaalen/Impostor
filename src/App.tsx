@@ -320,7 +320,7 @@ function App() {
               <div className="setting-block">
                 <div>
                   <strong>Temporizador</strong>
-                  <small>Opcional. Escribe los minutos. 0 o vacío significa sin límite.</small>
+                  <small>Opcional. 0 significa sin límite.</small>
                 </div>
                 <label className="timer-input-row">
                   <input

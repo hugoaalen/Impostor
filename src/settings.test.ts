@@ -22,7 +22,7 @@ describe("saved settings", () => {
       impostors: 2,
       impostorClueMode: "similar",
       wordDifficulty: "hard",
-      roundDuration: 180,
+      roundDuration: 420,
       avoidRecentWords: false,
       contentMode: "adult",
       selectedCategories: ["lugares", "deportes"],
@@ -36,7 +36,7 @@ describe("saved settings", () => {
       impostors: 2,
       impostorClueMode: "similar",
       wordDifficulty: "hard",
-      roundDuration: 180,
+      roundDuration: 420,
       avoidRecentWords: false,
       contentMode: "adult",
       selectedCategories: ["lugares", "deportes"],
@@ -78,5 +78,20 @@ describe("saved settings", () => {
     );
 
     expect(loadSettings().impostorClueMode).toBe("none");
+  });
+
+  it("accepts custom timer durations", () => {
+    localStorage.setItem(
+      "impostor-settings-v1",
+      JSON.stringify({
+        players: 5,
+        impostors: 1,
+        roundDuration: 540,
+        selectedCategories: ["comida"],
+        customPlayerNames: [],
+      }),
+    );
+
+    expect(loadSettings().roundDuration).toBe(540);
   });
 });

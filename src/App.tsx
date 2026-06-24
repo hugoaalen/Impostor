@@ -11,13 +11,6 @@ import {
 
 type Screen = "home" | "setup" | "reveal" | "round" | "results";
 
-const timerOptions: { label: string; value: RoundDuration }[] = [
-  { label: "Sin límite", value: 0 },
-  { label: "2 min", value: 120 },
-  { label: "3 min", value: 180 },
-  { label: "5 min", value: 300 },
-];
-
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -164,6 +157,16 @@ function App() {
     resetWordHistory();
     setWordHistoryCleared(true);
     window.setTimeout(() => setWordHistoryCleared(false), 1800);
+  };
+
+  const updateRoundMinutes = (value: string) => {
+    if (!value) {
+      setRoundDuration(0);
+      return;
+    }
+
+    const minutes = Math.min(60, Math.max(0, Math.round(Number(value) || 0)));
+    setRoundDuration(minutes * 60);
   };
 
   return (
@@ -317,20 +320,22 @@ function App() {
               <div className="setting-block">
                 <div>
                   <strong>Temporizador</strong>
-                  <small>Opcional. Útil si el debate se eterniza.</small>
+                  <small>Opcional. Escribe los minutos. 0 o vacío significa sin límite.</small>
                 </div>
-                <div className="segmented-control" role="group" aria-label="Temporizador">
-                  {timerOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      className={roundDuration === option.value ? "active" : ""}
-                      onClick={() => setRoundDuration(option.value)}
-                      aria-pressed={roundDuration === option.value}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
+                <label className="timer-input-row">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="0"
+                    max="60"
+                    step="1"
+                    value={roundDuration ? Math.round(roundDuration / 60) : ""}
+                    onChange={(event) => updateRoundMinutes(event.target.value)}
+                    placeholder="0"
+                    aria-label="Minutos de temporizador"
+                  />
+                  <span>minutos</span>
+                </label>
               </div>
 
               <div className="setting-group">
@@ -360,7 +365,7 @@ function App() {
                     <small>
                       {wordHistoryCleared
                         ? "Las próximas palabras parten de cero"
-                        : "Úsalo si queréis volver a mezclar todo el catálogo"}
+                        : "Vuelve a mezclar todo el catálogo"}
                     </small>
                   </span>
                 </button>

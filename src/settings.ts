@@ -3,7 +3,7 @@ import { categories } from "./game";
 export type ImpostorClueMode = "none" | "hint" | "similar";
 export type WordDifficulty = "easy" | "normal" | "hard";
 export type ContentMode = "family" | "adult";
-export type RoundDuration = 0 | 120 | 180 | 300;
+export type RoundDuration = number;
 
 export type GameSettings = {
   players: number;
@@ -44,7 +44,10 @@ function parseWordDifficulty(value: unknown): WordDifficulty {
 }
 
 function parseRoundDuration(value: unknown): RoundDuration {
-  return value === 120 || value === 180 || value === 300 ? value : DEFAULT_SETTINGS.roundDuration;
+  const duration = Math.round(Number(value));
+  return Number.isFinite(duration)
+    ? Math.min(60 * 60, Math.max(0, duration))
+    : DEFAULT_SETTINGS.roundDuration;
 }
 
 function parseContentMode(value: unknown): ContentMode {

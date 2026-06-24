@@ -9,6 +9,9 @@ function App() {
   const [screen, setScreen] = useState<Screen>("home");
   const [players, setPlayers] = useState(initialSettings.players);
   const [impostors, setImpostors] = useState(initialSettings.impostors);
+  const [impostorHintsEnabled, setImpostorHintsEnabled] = useState(
+    initialSettings.impostorHintsEnabled,
+  );
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     initialSettings.selectedCategories,
   );
@@ -33,10 +36,11 @@ function App() {
     saveSettings({
       players,
       impostors,
+      impostorHintsEnabled,
       selectedCategories,
       customPlayerNames,
     });
-  }, [customPlayerNames, impostors, players, selectedCategories]);
+  }, [customPlayerNames, impostorHintsEnabled, impostors, players, selectedCategories]);
 
   const setPlayerCount = (nextPlayers: number) => {
     const bounded = Math.min(14, Math.max(3, nextPlayers));
@@ -179,6 +183,24 @@ function App() {
                 <button onClick={() => setImpostors(Math.min(players - 2, impostors + 1))}>+</button>
               </div>
             </div>
+
+            <button
+              className={`setting-toggle ${impostorHintsEnabled ? "active" : ""}`}
+              onClick={() => setImpostorHintsEnabled((current) => !current)}
+              aria-pressed={impostorHintsEnabled}
+            >
+              <span>
+                <strong>Pista para impostores</strong>
+                <small>
+                  {impostorHintsEnabled
+                    ? "El impostor verá una pista amplia de la categoría"
+                    : "El impostor irá totalmente a ciegas"}
+                </small>
+              </span>
+              <span className="switch" aria-hidden="true">
+                <span />
+              </span>
+            </button>
 
             <div className="section-heading names-heading">
               <span className="step-number">02</span>
@@ -343,6 +365,12 @@ function App() {
                 <span className="tiny-label">TU ROL ES</span>
                 <strong>IMPOSTOR</strong>
                 <p>No conoces la palabra. Escucha, improvisa y que no te descubran.</p>
+                {impostorHintsEnabled && (
+                  <div className="impostor-hint">
+                    <span>Pista</span>
+                    <strong>{round.impostorHint}</strong>
+                  </div>
+                )}
                 <span className="category-pill">
                   {round.category.emoji} {round.category.name}
                 </span>

@@ -20,6 +20,7 @@ describe("saved settings", () => {
     saveSettings({
       players: 7,
       impostors: 2,
+      impostorHintsEnabled: false,
       selectedCategories: ["lugares", "deportes"],
       customPlayerNames: ["Hugo", "Ana", ...Array.from({ length: 12 }, () => "")],
     });
@@ -29,6 +30,7 @@ describe("saved settings", () => {
     expect(settings).toMatchObject({
       players: 7,
       impostors: 2,
+      impostorHintsEnabled: false,
       selectedCategories: ["lugares", "deportes"],
     });
     expect(settings.customPlayerNames.slice(0, 2)).toEqual(["Hugo", "Ana"]);
@@ -46,6 +48,7 @@ describe("saved settings", () => {
       JSON.stringify({
         players: 4,
         impostors: 1,
+        impostorHintsEnabled: true,
         selectedCategories: ["inventada", "comida"],
         customPlayerNames: [],
       }),

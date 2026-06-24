@@ -10,6 +10,7 @@ export type Category = {
 export type Round = {
   category: Category;
   word: string;
+  impostorHint: string;
   impostorIndexes: number[];
   startingPlayer: number;
 };
@@ -263,6 +264,27 @@ export const categories: Category[] = [
 ];
 
 const HISTORY_KEY = "impostor-word-history";
+const IMPOSTOR_HISTORY_KEY = "impostor-player-history";
+
+const impostorHints: Record<string, string> = {
+  comida: "Es algo que podrías comer, pedir o preparar.",
+  animales: "Es un ser vivo. Piensa en tamaño, hábitat o comportamiento.",
+  cine: "Puede ser una peli, serie o personaje muy reconocible.",
+  lugares: "Es un sitio real o un lugar al que podrías viajar.",
+  objetos: "Es algo físico que podrías encontrar o usar.",
+  profesiones: "Es un trabajo o una persona haciendo una función concreta.",
+  deportes: "Está relacionado con competir, entrenar o jugar.",
+  fiesta: "Tiene que ver con celebraciones, planes o noches con gente.",
+  musica: "Va de artistas, canciones, estilos o instrumentos.",
+  videojuegos: "Está dentro del mundo gaming: juego, personaje, consola u objeto.",
+  famosos: "Es una persona conocida por cine, deporte, televisión o cultura pop.",
+  internet: "Suena a redes, creadores de contenido, memes o lenguaje online.",
+  marcas: "Es una marca o producto que mucha gente reconoce.",
+  personajes: "Es un personaje de ficción, dibujo, libro, película o cómic.",
+  tecnologia: "Tiene que ver con apps, dispositivos o vida digital.",
+  espana: "Es una referencia cultural, lugar o costumbre de España.",
+  nostalgia: "Tiene aroma a infancia, 90/2000, juguetes, series o recreativos.",
+};
 
 function randomItem<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
@@ -284,15 +306,67 @@ function saveHistory(history: string[]) {
   }
 }
 
-function shuffledIndexes(length: number): number[] {
-  const indexes = Array.from({ length }, (_, index) => index);
+function getImpostorHistory(): number[] {
+  try {
+    const history = JSON.parse(localStorage.getItem(IMPOSTOR_HISTORY_KEY) ?? "[]");
+    return Array.isArray(history)
+      ? history.filter((index) => Number.isInteger(index) && index >= 0)
+      : [];
+  } catch {
+    return [];
+  }
+}
 
-  for (let index = indexes.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]];
+function saveImpostorHistory(history: number[]) {
+  try {
+    localStorage.setItem(IMPOSTOR_HISTORY_KEY, JSON.stringify(history));
+  } catch {
+    // La rotación de impostores mejora la justicia, pero no debe bloquear la partida.
+  }
+}
+
+function getImpostorWeight(index: number, previousRoundImpostors: number[], history: number[]) {
+  if (previousRoundImpostors.includes(index)) {
+    return 1;
   }
 
-  return indexes;
+  if (history.includes(index)) {
+    return 3;
+  }
+
+  return 6;
+}
+
+function weightedRandomPlayer(
+  candidates: number[],
+  previousRoundImpostors: number[],
+  history: number[],
+) {
+  const weightedCandidates = candidates.flatMap((index) =>
+    Array.from(
+      { length: getImpostorWeight(index, previousRoundImpostors, history) },
+      () => index,
+    ),
+  );
+
+  return randomItem(weightedCandidates);
+}
+
+function pickImpostorIndexes(playerCount: number, impostorCount: number): number[] {
+  const history = getImpostorHistory().filter((index) => index < playerCount);
+  const previousRoundImpostors = history.slice(-impostorCount);
+  const availablePlayers = Array.from({ length: playerCount }, (_, index) => index);
+  const selectedPlayers: number[] = [];
+
+  while (selectedPlayers.length < impostorCount && availablePlayers.length) {
+    const selectedPlayer = weightedRandomPlayer(availablePlayers, previousRoundImpostors, history);
+    selectedPlayers.push(selectedPlayer);
+    availablePlayers.splice(availablePlayers.indexOf(selectedPlayer), 1);
+  }
+
+  saveImpostorHistory([...history, ...selectedPlayers].slice(-(playerCount * 2)));
+
+  return selectedPlayers;
 }
 
 export function createRound(
@@ -315,11 +389,12 @@ export function createRound(
   const updatedHistory = [...history, `${category.id}:${word}`].slice(-240);
   saveHistory(updatedHistory);
 
-  const impostorIndexes = shuffledIndexes(playerCount).slice(0, impostorCount);
+  const impostorIndexes = pickImpostorIndexes(playerCount, impostorCount);
 
   return {
     category,
     word,
+    impostorHint: impostorHints[category.id] ?? category.description,
     impostorIndexes,
     startingPlayer: Math.floor(Math.random() * playerCount),
   };

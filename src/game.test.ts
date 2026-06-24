@@ -39,6 +39,22 @@ describe("createRound", () => {
     expect(history).toContain(`cine:${round.word}`);
   });
 
+  it("gives impostors a category hint", () => {
+    const round = createRound(["videojuegos"], 5, 1);
+
+    expect(round.impostorHint).toContain("gaming");
+  });
+
+  it("still allows recent impostors to repeat", () => {
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+    localStorage.setItem("impostor-player-history", JSON.stringify([0]));
+
+    const round = createRound(["comida"], 4, 1);
+
+    expect(round.impostorIndexes).toEqual([0]);
+    randomSpy.mockRestore();
+  });
+
   it("provides a broad catalogue without duplicates inside categories", () => {
     expect(categories).toHaveLength(17);
     expect(categories.every((category) => category.words.length >= 50)).toBe(true);

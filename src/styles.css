@@ -366,6 +366,64 @@ button:focus-visible {
   font-size: 20px;
 }
 
+.setting-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 52px);
+  min-height: 74px;
+  margin: 0 0 0 52px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--cream);
+  background: var(--panel);
+  text-align: left;
+  cursor: pointer;
+}
+
+.setting-toggle > span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.setting-toggle small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 28px;
+  margin-left: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 160ms ease;
+}
+
+.switch span {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--cream);
+  transition: transform 160ms ease;
+}
+
+.setting-toggle.active .switch {
+  background: var(--orange);
+}
+
+.setting-toggle.active .switch span {
+  transform: translateX(20px);
+}
+
 .names-heading {
   margin-top: 16px;
 }
@@ -769,6 +827,31 @@ button:focus-visible {
 
 .impostor-role > strong {
   color: #d94936;
+}
+
+.impostor-hint {
+  width: min(100%, 330px);
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid rgba(217, 73, 54, 0.2);
+  border-radius: 18px;
+  background: rgba(217, 73, 54, 0.08);
+  text-align: left;
+}
+
+.impostor-hint span {
+  display: block;
+  margin-bottom: 5px;
+  color: #d94936;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.impostor-hint strong {
+  color: #3f352d;
+  font: 800 15px/1.35 "Avenir Next", "Segoe UI", system-ui, sans-serif;
 }
 
 .category-pill {

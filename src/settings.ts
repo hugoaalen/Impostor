@@ -3,6 +3,7 @@ import { categories } from "./game";
 export type GameSettings = {
   players: number;
   impostors: number;
+  impostorHintsEnabled: boolean;
   selectedCategories: string[];
   customPlayerNames: string[];
 };
@@ -10,6 +11,7 @@ export type GameSettings = {
 export const DEFAULT_SETTINGS: GameSettings = {
   players: 5,
   impostors: 1,
+  impostorHintsEnabled: true,
   selectedCategories: ["comida", "animales", "cine"],
   customPlayerNames: Array.from({ length: 14 }, () => ""),
 };
@@ -40,6 +42,7 @@ export function loadSettings(): GameSettings {
     return {
       players,
       impostors,
+      impostorHintsEnabled: stored.impostorHintsEnabled !== false,
       selectedCategories: selectedCategories.length
         ? selectedCategories
         : DEFAULT_SETTINGS.selectedCategories,
